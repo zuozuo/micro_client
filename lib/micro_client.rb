@@ -10,12 +10,14 @@ require 'micro_client/config'
 require 'micro_client/collection'
 require 'micro_client/model'
 require 'micro_client/service'
+require 'micro_client/yaml_config'
 require 'micro_client/consul_config'
 
 module MicroClient
   extend self
 
-  attr_accessor :config
+  attr_accessor :config, :environments
+  delegate :get_service, to: :config
 
   def config
     @config ||= ConsulConfig.new
@@ -27,7 +29,7 @@ module MicroClient
 
   def get_model(const, micro_model)
     raise 'Please configure MicroClient first.' if config.blank?
-    service = config.get_service(const)
+    service = get_service(const)
     if service
       service.model
     else
