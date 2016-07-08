@@ -11,13 +11,17 @@ module MicroClient
 
     def setup_model
       res = get_model_structure
+      @model = get_or_create_model(name.camelcase)
+      @model.micro_service = self
+      @model.model_structure = res['results']
+      @model.model_structure[:model_sign] = res['model_sign']
+    end
 
-      micro_service = self
-      @model = Class.new(Micro::Model).tap do |model|
-        Micro.const_set name.camelcase, model
-        model.model_structure = res['results']
-        model.model_structure[:model_sign] = res['model_sign']
-        model.micro_service = micro_service
+    def get_or_create_model(model_name)
+      if Micro.const_defined?(model_name)
+        Micro.const_get(model_name)
+      else
+        Micro.const_set(model_name, Class.new(Micro::Model))
       end
     end
 

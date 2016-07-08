@@ -56,6 +56,13 @@ module Micro
         self.model_structure = micro_service.get_model_structure['results']
       end
 
+      def inherited(subclass)
+        if subclass.name
+          model_name = subclass.name.demodulize.underscore
+          subclass.micro_service = MicroClient.get_service(model_name)
+        end
+      end
+
       def model_structure=(structure)
         structure.blank? and return self
         @model_structure = structure.with_indifferent_access
