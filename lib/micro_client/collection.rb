@@ -45,8 +45,12 @@ module Micro
       @collection
     end
 
+    def raw_response
+      klass.micro_service.send_request(conditions)
+    end
+
     def load_json
-      klass.micro_service.send_request(conditions)['results']
+      raw_response['results']
     end
 
     def load_data &block
@@ -66,22 +70,19 @@ module Micro
 
     def handle_response(res, &blk)
       results = res['results']
+      klass_to_class.reload_structure_by_model_sign(res['model_sign'])
 
-      if res['model_sign'] != klass_to_class.model_sign
-        klass_to_class.reload_structure
-      end
-
-      _class = Micro.const_get(res['model'])
+      model = Micro.safe_const_get(res['model'])
 
       @collection = case results
                     when Array
-                      if _class < Model
-                        results.map! { |obj| _class.new(obj) }
+                      if model && model < Model
+                        results.map! { |obj| model.new(obj) }
                       else
                         results
                       end
                     when Hash
-                      block_given? ? yield(results) : _class.new(results)
+                      block_given? ? yield(results) : model.new(results)
                     else
                       results
                     end

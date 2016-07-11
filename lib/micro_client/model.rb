@@ -52,6 +52,11 @@ module Micro
         model_structure[:class_methods]
       end
 
+      def reload_structure_by_model_sign(sign)
+        return if model_sign == sign
+        reload_structure
+      end
+
       def reload_structure
         self.model_structure = micro_service.get_model_structure['results']
       end
